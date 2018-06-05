@@ -5,6 +5,7 @@ import cv2
 from utils.category_index_coco import CATEGORY_INDEX as cateogry_index_coco
 from utils.workers import SessionWorker
 from utils.video_streamers import WebcamVideoStream
+from utils.predictions_parser import parser
 import tensorflow as tf
 from tensorflow.core.framework import graph_pb2
 
@@ -157,11 +158,12 @@ def detection(detection_graph, category_index, score, expand):
 
                 cur_frames += 1
                 for box, score, _class in zip(np.squeeze(boxes), np.squeeze(scores), np.squeeze(classes)):
-                    label = category_index[_class]['name']
-                    print("label: {}\nscore: {}\nbox: {}".format(label, score, box))
-                    print("time: {}".format(time.time() - tick))
+                    #label = category_index[_class]['name']
+                    #print("label: {}\nscore: {}\nbox: {}".format(label, score, box))
                     if cur_frames >= max_frames:
                         break
+                print(parser(num, boxes, scores, classes))
+                print("time: {}".format(time.time() - tick))
 
     # End everything
     gpu_worker.stop()
