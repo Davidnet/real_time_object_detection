@@ -14,6 +14,7 @@ def create_pred(tup, size):
     return dict(name=name["name"], score=score, box=box, id=name['id'], distance=distance)
 
 def pixel_coordinates(box, size):
+    # SHAPES ARE INVERTED
     ymin, xmin, ymax, xmax = box
     return (ymin*(size[0]-1), xmin*(size[1]-1), ymax*(size[0]-1), xmax*(size[1]-1))
 
@@ -41,10 +42,13 @@ def detection_list(boxes, classes, scores, max_boxes_to_report=None, min_score_t
     return detections
 
 
-def parser(num, boxes, scores, classes):
-    normalized_predictions = True
-    max_predictions = 50
-    min_score = 0.5
+def parser(num, boxes, scores, classes, **kargs):
+
+    min_score = kargs.pop("min_score", 0.5)
+    max_predictions = kargs.pop("max_predictions", 20)
+    normalized_predictions = kargs.pop("normalized_predictions", True) #By default FALSE TODO: 
+    image_shape = kargs.pop("image_shape", None)
+
     predictions = dict(num_detections = num,
                 boxes  =  boxes, 
                 scores =  scores,
@@ -59,8 +63,7 @@ def parser(num, boxes, scores, classes):
     if normalized_predictions:
         predictions = map(lambda tup: create_pred(tup, None), predictions)
     else:
-        pass
-        #predictions = map(lambda tup: create_pred(tup, (image[0].shape)), predictions)
+        predictions = map(lambda tup: create_pred(tup, image_shape), predictions)
     predictions = filter(P["score"] > min_score, predictions)
     predictions = sorted(predictions, key = P["score"])
     predictions = cz.take(max_predictions, predictions)

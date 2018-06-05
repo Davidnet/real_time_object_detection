@@ -89,7 +89,7 @@ def load_frozenmodel():
     return detection_graph, score, expand
 
 
-def detection(detection_graph, category_index, score, expand):
+def detection(detection_graph, score, expand):
     max_frames = 500000
     print("Building Graph")
     # Session Config: allow seperate GPU/CPU adressing and limit memory allocation
@@ -157,13 +157,9 @@ def detection(detection_graph, category_index, score, expand):
                     boxes, scores, classes, num, image = c["results"][0],c["results"][1],c["results"][2],c["results"][3],c["extras"]
 
                 cur_frames += 1
-                for box, score, _class in zip(np.squeeze(boxes), np.squeeze(scores), np.squeeze(classes)):
-                    #label = category_index[_class]['name']
-                    #print("label: {}\nscore: {}\nbox: {}".format(label, score, box))
-                    if cur_frames >= max_frames:
-                        break
-                print(parser(num, boxes, scores, classes))
+                predictions = parser(num, boxes, scores, classes)
                 print("time: {}".format(time.time() - tick))
+                print(predictions)
 
     # End everything
     gpu_worker.stop()
@@ -172,7 +168,7 @@ def detection(detection_graph, category_index, score, expand):
 
 def main():
     graph, score, expand = load_frozenmodel()
-    detection(graph,cateogry_index_coco, score, expand)
+    detection(graph, score, expand)
 
 if __name__ == "__main__":
     main()
