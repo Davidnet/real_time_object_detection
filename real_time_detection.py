@@ -117,9 +117,9 @@ def detection(detection_graph, score, expand):
             cpu_counter = 0
             video_stream = WebcamVideoStream(0,160,120).start()
             cur_frames = 0
+            tick = time.time()
             print('Starting Detection')
             while video_stream.isActive():
-                tick = time.time()
                 # actual Detection
                 if gpu_worker.is_sess_empty():
                     # read video frame, expand dimensions and convert to rgb
@@ -155,11 +155,10 @@ def detection(detection_graph, score, expand):
                 else:
                     cpu_counter = 0
                     boxes, scores, classes, num, image = c["results"][0],c["results"][1],c["results"][2],c["results"][3],c["extras"]
-
+                    print("time: {}".format(time.time() - tick))
+                    tick = time.time()
                 cur_frames += 1
                 predictions = parser(num, boxes, scores, classes)
-                print("time: {}".format(time.time() - tick))
-                print(predictions)
 
     # End everything
     gpu_worker.stop()
