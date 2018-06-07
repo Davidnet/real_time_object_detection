@@ -36,6 +36,7 @@ class SessionWorker():
         self.sess_queue = Queue.Queue()
         self.result_queue = Queue.Queue()
         self.tag = tag
+        self.call_model = False
         t = threading.Thread(target=self.execution,args=(graph,config))
         t.setDaemon(True)
         t.start()
@@ -46,6 +47,7 @@ class SessionWorker():
         try:
             with tf.Session(graph=graph,config=config) as sess:
                 while self.is_thread_running:
+                    if self.call_model:
                         while not self.sess_queue.empty():
                             q = self.sess_queue.get(block=False)
                             opts = q["opts"]
@@ -58,6 +60,8 @@ class SessionWorker():
                             self.result_queue.put({"results":results,"extras":extras})
                             self.sess_queue.task_done()
                         time.sleep(0.005)
+                    else:
+                        time.sleep(0.1)
         except:
             import traceback
             traceback.print_exc()
