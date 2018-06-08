@@ -11,6 +11,7 @@ import tensorflow as tf
 from tensorflow.core.framework import graph_pb2
 
 MODEL_URL ="gs://vision-198622-production-models/object-detection/ssd_mobilenet_v1_coco_2017_11_17/model.pb" 
+FRAME_SIZE = (160, 120)
 
 def _node_name(n):
   if n.startswith("^"):
@@ -118,7 +119,7 @@ def detection(detection_graph, score, expand, call):
             cpu_opts = [detection_boxes, detection_scores, detection_classes, num_detections]
             gpu_counter = 0
             cpu_counter = 0
-            video_stream = WebcamVideoStream(0,160,120).start()
+            video_stream = WebcamVideoStream(0, *FRAME_SIZE).start()
             tick = time.time()
             print('Starting Detection')
             init_time = time.time()
@@ -165,7 +166,7 @@ def detection(detection_graph, score, expand, call):
                         boxes, scores, classes, num, image = c["results"][0],c["results"][1],c["results"][2],c["results"][3],c["extras"]
                         # print("time: {}".format(time.time() - tick))
                         tick = time.time()
-                    predictions = parser(num, boxes, scores, classes)
+                    predictions = parser(num, boxes, scores, classes, image_shape=FRAME_SIZE)
                     print(predictions)
                 else:
                     gpu_worker.call_model = False

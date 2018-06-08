@@ -46,8 +46,11 @@ def parser(num, boxes, scores, classes, **kargs):
 
     min_score = kargs.pop("min_score", 0.5)
     max_predictions = kargs.pop("max_predictions", 20)
-    normalized_predictions = kargs.pop("normalized_predictions", True) #By default FALSE TODO: 
     image_shape = kargs.pop("image_shape", None)
+    if image_shape is not None:
+        normalized_predictions = True
+    else:
+        normalized_predictions = False
 
     predictions = dict(num_detections = num,
                 boxes  =  boxes, 
@@ -61,9 +64,9 @@ def parser(num, boxes, scores, classes, **kargs):
     predictions['scores'] = predictions['scores'][0].tolist()
     predictions = zip(predictions['classes'], predictions['scores'], predictions['boxes'])
     if normalized_predictions:
-        predictions = map(lambda tup: create_pred(tup, None), predictions)
-    else:
         predictions = map(lambda tup: create_pred(tup, image_shape), predictions)
+    else:
+        predictions = map(lambda tup: create_pred(tup, None), predictions)
     predictions = filter(P["score"] > min_score, predictions)
     predictions = sorted(predictions, key = P["score"])
     predictions = cz.take(max_predictions, predictions)

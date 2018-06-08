@@ -227,7 +227,7 @@ class RealTimeObjectDetector(object):
                             print("time: {}".format(time.time() - tick))
                             tick = time.time()
                             fps.update()
-                        self.predictions = parser(num, boxes, scores, classes)
+                        self.predictions = parser(num, boxes, scores, classes, image_shape=image.shape)
                         # print(self.predictions)
                     else:
                         gpu_worker.call_model = False
