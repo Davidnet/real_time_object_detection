@@ -169,8 +169,8 @@ class RealTimeObjectDetector(object):
                 score_in = detection_graph.get_tensor_by_name('Postprocessor/convert_scores_1:0')
                 expand_in = detection_graph.get_tensor_by_name('Postprocessor/ExpandDims_1_1:0')
                 # Threading
-                gpu_worker = SessionWorkerBot("GPU",detection_graph,config)
-                cpu_worker = SessionWorkerBot("CPU",detection_graph,config)
+                gpu_worker = SessionWorker("GPU",detection_graph,config)
+                cpu_worker = SessionWorker("CPU",detection_graph,config)
                 gpu_opts = [score_out, expand_out]
                 cpu_opts = [detection_boxes, detection_scores, detection_classes, num_detections]
                 gpu_counter = 0

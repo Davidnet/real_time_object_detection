@@ -11,7 +11,7 @@ elif PY3:
 
 import tensorflow as tf
 
-class SessionWorkerBot():
+class SessionWorker():
 # from https://github.com/naisy/realtime_object_detection/blob/master/lib/session_worker.py
 # TensorFlow Session Thread
 #
@@ -99,7 +99,7 @@ class SessionWorkerBot():
         return
 
 
-class SessionWorker():
+class SessionWorkerOriginal():
 # from https://github.com/naisy/realtime_object_detection/blob/master/lib/session_worker.py
 # TensorFlow Session Thread
 #

@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import cv2
 from utils.category_index_coco import CATEGORY_INDEX as cateogry_index_coco
-from utils.workers import SessionWorker
+from utils.workers import SessionWorkerOriginal
 from utils.video_streamers import WebcamVideoStream
 from utils.predictions_parser import parser
 from utils.downloader import Downloader
@@ -113,8 +113,8 @@ def detection(detection_graph, score, expand, call):
             score_in = detection_graph.get_tensor_by_name('Postprocessor/convert_scores_1:0')
             expand_in = detection_graph.get_tensor_by_name('Postprocessor/ExpandDims_1_1:0')
             # Threading
-            gpu_worker = SessionWorker("GPU",detection_graph,config)
-            cpu_worker = SessionWorker("CPU",detection_graph,config)
+            gpu_worker = SessionWorkerOriginal("GPU",detection_graph,config)
+            cpu_worker = SessionWorkerOriginal("CPU",detection_graph,config)
             gpu_opts = [score_out, expand_out]
             cpu_opts = [detection_boxes, detection_scores, detection_classes, num_detections]
             gpu_counter = 0
