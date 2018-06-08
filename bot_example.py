@@ -169,8 +169,8 @@ class RealTimeObjectDetector(object):
                 score_in = detection_graph.get_tensor_by_name('Postprocessor/convert_scores_1:0')
                 expand_in = detection_graph.get_tensor_by_name('Postprocessor/ExpandDims_1_1:0')
                 # Threading
-                gpu_worker = SessionWorker("GPU",detection_graph,config)
-                cpu_worker = SessionWorker("CPU",detection_graph,config)
+                gpu_worker = SessionWorkerBot("GPU",detection_graph,config)
+                cpu_worker = SessionWorkerBot("CPU",detection_graph,config)
                 gpu_opts = [score_out, expand_out]
                 cpu_opts = [detection_boxes, detection_scores, detection_classes, num_detections]
                 gpu_counter = 0
@@ -196,8 +196,7 @@ class RealTimeObjectDetector(object):
                             image_expanded = np.expand_dims(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), axis=0)
                             # put new queue
                             gpu_feeds = {image_tensor: image_expanded}
-                            gpu_extras = None
-                            gpu_worker.put_sess_queue(gpu_opts,gpu_feeds,gpu_extras)
+                            gpu_worker.put_sess_queue(gpu_opts,gpu_feeds)
         
                         g = gpu_worker.get_result_queue()
                         if g is None:
@@ -206,14 +205,13 @@ class RealTimeObjectDetector(object):
                         else:
                             # gpu thread has output queue.
                             gpu_counter = 0
-                            score,expand,image = g["results"][0],g["results"][1],g["extras"]
+                            score,expand = g["results"][0],g["results"][1]
 
                             if cpu_worker.is_sess_empty():
                                 # When cpu thread has no next queue, put new queue.
                                 # else, drop gpu queue.
                                 cpu_feeds = {score_in: score, expand_in: expand}
-                                cpu_extras = image
-                                cpu_worker.put_sess_queue(cpu_opts,cpu_feeds,cpu_extras)
+                                cpu_worker.put_sess_queue(cpu_opts,cpu_feeds,)
 
                         c = cpu_worker.get_result_queue()
                         if c is None:
@@ -223,12 +221,12 @@ class RealTimeObjectDetector(object):
                             continue # If CPU RESULT has not been set yet, no fps update
                         else:
                             cpu_counter = 0
-                            boxes, scores, classes, num, image = c["results"][0],c["results"][1],c["results"][2],c["results"][3],c["extras"]
-                            print("time: {}".format(time.time() - tick))
+                            boxes, scores, classes, num = c["results"][0],c["results"][1],c["results"][2],c["results"][3]
+                            # print("time: {}".format(time.time() - tick))
                             tick = time.time()
                             fps.update()
                         self.predictions = parser(num, boxes, scores, classes, image_shape=image.shape)
-                        # print(self.predictions)
+                        print(self.predictions)
                     else:
                         gpu_worker.call_model = False
                         cpu_worker.call_model = False
