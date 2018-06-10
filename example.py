@@ -9,9 +9,52 @@ from utils.predictions_parser import parser
 from utils.downloader import Downloader
 import tensorflow as tf
 from tensorflow.core.framework import graph_pb2
+import datetime
 
 MODEL_URL ="gs://vision-198622-production-models/object-detection/ssd_mobilenet_v1_coco_2017_11_17/model.pb" 
 FRAME_SIZE = (160, 120)
+
+class FPS2:
+    def __init__(self, interval):
+        self._glob_start = None
+        self._glob_end = None
+        self._glob_numFrames = 0
+        self._local_start = None
+        self._local_numFrames = 0
+        self._interval = interval
+        self.curr_local_elapsed = None
+        self.first = False
+
+    def start(self):
+        self._glob_start = datetime.datetime.now()
+        self._local_start = self._glob_start
+        return self
+
+    def stop(self):
+        self._glob_end = datetime.datetime.now()
+
+    def update(self):
+        self.first = True
+        curr_time = datetime.datetime.now()
+        self.curr_local_elapsed = (curr_time - self._local_start).total_seconds()
+        self._glob_numFrames += 1
+        self._local_numFrames += 1
+        if self.curr_local_elapsed > self._interval:
+          print("FPS: {}".format(self.fps_local()))
+          self._local_numFrames = 0
+          self._local_start = curr_time
+
+    def elapsed(self):
+        return (self._glob_end - self._glob_start).total_seconds()
+
+    def fps(self):
+        return self._glob_numFrames / self.elapsed()
+    
+    def fps_local(self):
+        if self.first:
+            return round(self._local_numFrames / self.curr_local_elapsed,1)
+        else:
+            return 0.0
 
 def _node_name(n):
   if n.startswith("^"):
@@ -123,10 +166,11 @@ def detection(detection_graph, score, expand, call):
             tick = time.time()
             print('Starting Detection')
             init_time = time.time()
+            fps = FPS2(5).start()
             while video_stream.isActive(): # Always True
-                if time.time() - init_time > 10:
-                    call = not call
-                    init_time = time.time()
+                # if time.time() - init_time > 10:
+                #     call = not call
+                #     init_time = time.time()
                 if call:
                     gpu_worker.call_model = True
                     cpu_worker.call_model = True
@@ -166,8 +210,10 @@ def detection(detection_graph, score, expand, call):
                         boxes, scores, classes, num, image = c["results"][0],c["results"][1],c["results"][2],c["results"][3],c["extras"]
                         # print("time: {}".format(time.time() - tick))
                         tick = time.time()
-                    predictions = parser(num, boxes, scores, classes, image_shape=FRAME_SIZE)
-                    print(predictions)
+                        # fps.update()
+                    fps.update()
+                    # predictions = parser(num, boxes, scores, classes, image_shape=FRAME_SIZE)
+                    # print(predictions)
                 else:
                     gpu_worker.call_model = False
                     cpu_worker.call_model = False

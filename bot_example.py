@@ -184,9 +184,9 @@ class RealTimeObjectDetector(object):
                 init_time = time.time()
                 fps = FPS2(5).start()
                 while True: # Always True
-                    if time.time() - init_time > 10:
-                        self.call_model = not self.call_model
-                        init_time = time.time()
+                    # if time.time() - init_time > 10:
+                    #     self.call_model = not self.call_model
+                    #     init_time = time.time()
                     if self.call_model:
                         gpu_worker.call_model = True
                         cpu_worker.call_model = True
@@ -226,7 +226,8 @@ class RealTimeObjectDetector(object):
                             tick = time.time()
                             fps.update()
                         self.predictions = parser(num, boxes, scores, classes, image_shape=image.shape)
-                        print(self.predictions)
+                        # print(self.predictions)
+                        fps.update()
                     else:
                         gpu_worker.call_model = False
                         cpu_worker.call_model = False
