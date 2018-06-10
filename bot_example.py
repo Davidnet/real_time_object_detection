@@ -10,6 +10,8 @@ from utils.downloader import Downloader
 import tensorflow as tf
 from tensorflow.core.framework import graph_pb2
 
+from multiprocessing import Process, Pipe
+
 from easy_memmap import EasyMemmap, MultiImagesMemmap
 import os
 import datetime
@@ -59,10 +61,9 @@ class FPS2:
             return 0.0
 
 class RealTimeObjectDetector(object):
-    def __init__(self, model_url):
-        download_request = Downloader.get(model_url)
-        model_path = download_request.path
-        self.graph, self.score, self.expand = self.load_frozenmodel(model_path)
+    def __init__(self):
+        download_request = Downloader.get(MODEL_URL)
+        self.model_path = download_request.path
         self.call_model = True
         self.predictions = []
 
@@ -147,6 +148,7 @@ class RealTimeObjectDetector(object):
 
 
     def detection(self):
+        self.graph, self.score, self.expand = self.load_frozenmodel(self.model_path)
         print("Building Graph")
         detection_graph = self.graph
         score = self.score
@@ -237,9 +239,22 @@ class RealTimeObjectDetector(object):
         gpu_worker.stop()
         cpu_worker.stop()
 
+
+class RealTimeObjectDetectorProcess(Process):
+    def __init__(self, **kwargs):
+        super(RealTimeObjectDetectorProcess,self).__init__()
+        self.object_detector = RealTimeObjectDetector()
+        self.daemon = True
+
+    def run(self):
+        self.object_detector.detection()
+
 def main():
-    object_detector = RealTimeObjectDetector(MODEL_URL)
-    object_detector.detection()
+    # object_detector = RealTimeObjectDetector()
+    # object_detector.detection()
+    object_process = RealTimeObjectDetectorProcess()
+    object_process.start()
+    object_process.join()
 
 if __name__ == "__main__":
     main()
