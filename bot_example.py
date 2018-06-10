@@ -79,7 +79,10 @@ class RealTimeObjectDetector(object):
         # load a frozen Model and split it into GPU and CPU graphs
         # Hardcoded for ssd_mobilenet
         input_graph = tf.Graph()
-        with tf.Session(graph=input_graph):
+        config = tf.ConfigProto() 
+        config.gpu_options.allow_growth=True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.1
+        with tf.Session(graph=input_graph, config=config):
             shape = 1917
             score = tf.placeholder(tf.float32, shape=(None, shape, num_classes), name="Postprocessor/convert_scores")
             expand = tf.placeholder(tf.float32, shape=(None, shape, 1, 4), name="Postprocessor/ExpandDims_1")
