@@ -226,7 +226,7 @@ class RealTimeObjectDetector(object):
                             boxes, scores, classes, num = c["results"][0],c["results"][1],c["results"][2],c["results"][3]
                             # print("time: {}".format(time.time() - tick))
                             tick = time.time()
-                            fps.update()
+                            # fps.update()
                         self.predictions = parser(num, boxes, scores, classes, image_shape=image.shape)
                         # print(self.predictions)
                         fps.update()
