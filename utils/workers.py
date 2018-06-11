@@ -31,12 +31,12 @@ class SessionWorker():
 #
 # extras: None or frame image data for draw. GPU detection thread doesn't wait result. Therefore, keep frame image data if you want to draw detection result boxes on image.
 #
-    def __init__(self,tag,graph,config):
+    def __init__(self,tag,graph,config,haste=False):
         self.lock = threading.Lock()
         self.sess_queue = Queue.Queue()
         self.result_queue = Queue.Queue()
         self.tag = tag
-        self.call_model = False
+        self.call_model = haste
         t = threading.Thread(target=self.execution,args=(graph,config))
         t.setDaemon(True)
         t.start()
