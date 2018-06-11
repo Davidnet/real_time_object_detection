@@ -18,7 +18,7 @@ class SplitObjectDetector(object):
             return n.split(":")[0]
 
     def load_frozenmodel(self, model_path):
-        print('> Loading frozen model into memory')
+        # print('> Loading frozen model into memory')
         num_classes = 90
         # load a frozen Model and split it into GPU and CPU graphs
         # Hardcoded for ssd_mobilenet
