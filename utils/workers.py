@@ -52,11 +52,12 @@ class SessionWorker():
                             q = self.sess_queue.get(block=False)
                             opts = q["opts"]
                             feeds= q["feeds"]
+                            extras= q["extras"]
                             if feeds is None:
                                 results = sess.run(opts)
                             else:
                                 results = sess.run(opts,feed_dict=feeds)
-                            self.result_queue.put({"results":results})
+                            self.result_queue.put({"results":results,"extras":extras})
                             self.sess_queue.task_done()
                         time.sleep(0.005)
                     else:
@@ -73,8 +74,8 @@ class SessionWorker():
         else:
             return False
 
-    def put_sess_queue(self,opts,feeds=None):
-        self.sess_queue.put({"opts":opts,"feeds":feeds})
+    def put_sess_queue(self,opts,feeds=None, extras=None):
+        self.sess_queue.put({"opts":opts,"feeds":feeds, "extras": extras})
         return
 
     def is_result_empty(self):

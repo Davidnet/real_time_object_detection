@@ -17,6 +17,7 @@ import os
 import datetime
 
 MODEL_URL ="gs://vision-198622-production-models/object-detection/ssd_mobilenet_v1_coco_2017_11_17/model.pb" 
+MODEL_URL = "gs://vision-198622-production-models/object-detection/ssd_mobilenet_v1_fast/model.pb"
 
 class FPS2:
     def __init__(self, interval):
@@ -201,7 +202,7 @@ class RealTimeObjectDetector(object):
                             image_expanded = np.expand_dims(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), axis=0)
                             # put new queue
                             gpu_feeds = {image_tensor: image_expanded}
-                            gpu_worker.put_sess_queue(gpu_opts,gpu_feeds)
+                            gpu_worker.put_sess_queue(gpu_opts,gpu_feeds, "C")
         
                         g = gpu_worker.get_result_queue()
                         if g is None:
@@ -210,13 +211,13 @@ class RealTimeObjectDetector(object):
                         else:
                             # gpu thread has output queue.
                             gpu_counter = 0
-                            score,expand = g["results"][0],g["results"][1]
+                            score, expand, extras = g["results"][0], g["results"][1], g["extras"]
 
                             if cpu_worker.is_sess_empty():
                                 # When cpu thread has no next queue, put new queue.
                                 # else, drop gpu queue.
                                 cpu_feeds = {score_in: score, expand_in: expand}
-                                cpu_worker.put_sess_queue(cpu_opts,cpu_feeds,)
+                                cpu_worker.put_sess_queue(cpu_opts,cpu_feeds,"C")
 
                         c = cpu_worker.get_result_queue()
                         if c is None:
@@ -226,7 +227,7 @@ class RealTimeObjectDetector(object):
                             continue # If CPU RESULT has not been set yet, no fps update
                         else:
                             cpu_counter = 0
-                            boxes, scores, classes, num = c["results"][0],c["results"][1],c["results"][2],c["results"][3]
+                            boxes, scores, classes, num, extras = c["results"][0],c["results"][1],c["results"][2],c["results"][3], c["extras"]
                             # print("time: {}".format(time.time() - tick))
                             tick = time.time()
                             # fps.update()
